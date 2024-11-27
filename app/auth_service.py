@@ -3,22 +3,25 @@ from fastapi import HTTPException, status
 from .schemas import UserRegister, UserLogin, LoginResult, ErrorResponse, LoginSuccessResponse
 import logging
 
-# Setup basic logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 class AuthService:
     @staticmethod
     async def register_user(user: UserRegister) -> ErrorResponse:
         try:
+            
             try:
-                existing_user = auth.get_user_by_email(user.email)
+                auth.get_user_by_email(user.email)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=ErrorResponse(
-                        error=True,
-                        message="Email already registered"
-                    ).dict()
+                    detail={
+                        "error": True,
+                        "message": "Email already registered"
+                    }
                 )
             except auth.UserNotFoundError:
                 pass
@@ -29,21 +32,23 @@ class AuthService:
                 display_name=user.name
             )
 
+            logger.info(f"User registered successfully: {user.email}")
             return ErrorResponse(
                 error=False,
                 message="User Created"
             )
 
+        except HTTPException as http_error:
+            logger.error(f"Registration HTTP error: {http_error.detail}")
+            raise
         except Exception as e:
-            logger.error(f"Registration error: {str(e)}")
-            if isinstance(e, HTTPException):
-                raise e
+            logger.error(f"Unexpected registration error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=ErrorResponse(
-                    error=True,
-                    message=str(e)
-                ).dict()
+                detail={
+                    "error": True,
+                    "message": "Registration failed"
+                }
             )
 
     @staticmethod
@@ -53,12 +58,15 @@ class AuthService:
             
             custom_token = auth.create_custom_token(user_record.uid)
             
+            token = custom_token.decode('utf-8') if isinstance(custom_token, bytes) else custom_token
+
             login_result = LoginResult(
                 userId=f"user-{user_record.uid[:10]}",
-                name=user_record.display_name or "",  # Handle None case
-                token=custom_token.decode()
+                name=user_record.display_name or "",
+                token=token
             )
 
+            logger.info(f"User logged in successfully: {user.email}")
             return LoginSuccessResponse(
                 error=False,
                 message="success",
@@ -66,19 +74,20 @@ class AuthService:
             )
 
         except auth.UserNotFoundError:
+            logger.warning(f"Login attempt for non-existent user: {user.email}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=ErrorResponse(
-                    error=True,
-                    message="User not found"
-                ).dict()
+                detail={
+                    "error": True,
+                    "message": "User not found"
+                }
             )
         except Exception as e:
-            logger.error(f"Login error: {str(e)}")
+            logger.error(f"Unexpected login error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=ErrorResponse(
-                    error=True,
-                    message=str(e)
-                ).dict()
+                detail={
+                    "error": True,
+                    "message": "Login failed"
+                }
             )
