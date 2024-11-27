@@ -1,1 +1,1 @@
-# Trial & Error auth-deploy-apps
+#COMING SOON TO HOW USE
