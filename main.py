@@ -6,7 +6,7 @@ db = get_firestore_client()
 
 app = FastAPI(
     title="Authentication API",
-    description="API for user authentication"
+    description="dokumentasi buat API proyek capstone"
 )
 
 app.include_router(auth_router)
