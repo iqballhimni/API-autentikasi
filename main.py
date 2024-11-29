@@ -1,12 +1,21 @@
 from fastapi import FastAPI
-from app.firebase import get_firestore_client
 from app.auth import router as auth_router
+from app.firebase import FirebaseInit
 
-db = get_firestore_client()
+db = FirebaseInit.get_firestore()
 
 app = FastAPI(
     title="Authentication API",
-    description="dokumentasi buat API proyek capstone"
+    description="API for user authentication"
 )
 
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api/v1")
+
+@app.get("/")
+async def root():
+    return {"status": "healthy", "message": "Authentication API is running"}
+
+@app.get("/_ah/warmup")
+async def warmup():
+    
+    return {"status": "ok"}
