@@ -1,14 +1,16 @@
 runtime: python39
-
-service_account: #add_your_service_accounts
-entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+service: default
 
 env_variables:
-  FIREBASE_SERVICE_ACCOUNT_PATH: "./service/serviceKey.json"
+  FIREBASE_STORAGE_BUCKET: "mush-scope.appspot.com"
+  GOOGLE_APPLICATION_CREDENTIALS: "service/serviceKey.json"
+
+entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --timeout 300
 
 handlers:
 - url: /.*
   script: auto
+  secure: always
 
 automatic_scaling:
   min_instances: 1
