@@ -3,7 +3,7 @@ service: default
 
 env_variables:
   FIREBASE_STORAGE_BUCKET: "mush-scope.appspot.com"
-  GOOGLE_APPLICATION_CREDENTIALS: "service/serviceKey.json"
+  FIREBASE_SERVICE_ACCOUNT_PATH: "service/serviceKey.json"
 
 entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --timeout 300
 
