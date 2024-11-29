@@ -1,9 +1,11 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class UserRegister(BaseModel):
-    name: str
-    email: str
+    name: str 
+    email: str 
     password: str
+    photo_url: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: str
@@ -13,6 +15,7 @@ class LoginResult(BaseModel):
     userId: str
     name: str
     token: str
+    photo_url: Optional[str] = None
 
 class ErrorResponse(BaseModel):
     error: bool
